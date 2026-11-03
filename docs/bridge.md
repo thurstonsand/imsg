@@ -164,6 +164,8 @@ imsg chat-delete --chat 'iMessage;+;chat0000'
 imsg chat-mark --chat 'iMessage;+;chat0000' --read
 ```
 
+`chat-delete` moves the chat to Recently Deleted, as deleting a conversation in Messages does: the chat leaves the conversation list and stays recoverable from Recently Deleted for 30 days. It requires `selectors.moveChatToRecentlyDeleted`. On a Messages version without it, `chat-delete` fails without touching the chat instead of erasing it permanently.
+
 `chat-photo` clears the photo when `--file` is omitted. `chat-mark` also accepts `--unread`. `chat-create` creates iMessage chats; SMS sending remains available through the standard `imsg send --service sms` path.
 
 Group-photo files use the same secure staging as other attachments. The source must be a regular file reached without symlink components, and the calling process needs write access to `~/Library/Messages/Attachments/imsg/`. If macOS denies staging, grant the caller Full Disk Access as described in [Permissions](permissions.md), then restart it. Clearing a photo does not stage a file.

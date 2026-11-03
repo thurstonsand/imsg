@@ -319,18 +319,6 @@ func injectedHelperBroadcastsFailClosedNativePollVoteMetadata() throws {
 }
 
 @Test
-func injectedHelperFallsBackToMacOS26ChatRemovalSelector() throws {
-  let source = stripObjectiveCComments(try injectedHelperSource())
-  let deleteBody = try #require(bridgeFunctionBody(named: "handleDeleteChat", in: source))
-
-  #expect(source.contains(#"@"deleteChat""#))
-  #expect(source.contains(#"@"removeChat""#))
-  #expect(deleteBody.contains(#"NSSelectorFromString(@"deleteChat:")"#))
-  #expect(deleteBody.contains(#"NSSelectorFromString(@"_chat_remove:")"#))
-  #expect(deleteBody.contains("NSStringFromSelector(selectedSelector)"))
-}
-
-@Test
 func injectedHelperConstructorOnlySchedulesDelayedBootstrap() throws {
   let source = stripObjectiveCComments(try injectedHelperSource())
   let constructorBody = try #require(bridgeFunctionBody(named: "injectedInit", in: source))

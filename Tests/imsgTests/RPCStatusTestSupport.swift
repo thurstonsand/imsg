@@ -59,7 +59,7 @@ func fullRPCStatusBridgeSelectors() -> [String: Bool] {
     "checkIMessageAvailability": true,
     "editMessageItem": true,
     "retractMessagePart": true,
-    "deleteChat": true,
+    "moveChatToRecentlyDeleted": true,
     "namePhotoShouldOffer": true,
     "namePhotoShare": true,
   ]

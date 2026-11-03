@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Move chats deleted with `chat-delete` / `chats.delete` to Recently Deleted through `IMChatRegistry moveMessagesInChatsToRecentlyDeleted:deleteDate:synchronously:completionHandler:`, as Messages does, instead of erasing them with `_chat_remove:`. Without that selector, refuse as retry-safe `not_started` rather than delete permanently; advertise `selectors.moveChatToRecentlyDeleted` and drop the `deleteChat` / `removeChat` selector keys (#381).
 - Schedule weekly CodeQL main scans while retaining PR and manual analysis.
 
 ## 0.20.0 - 2026-10-26

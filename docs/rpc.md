@@ -267,6 +267,26 @@ Previously uncontacted addresses are supported. All recipients must resolve and
 pass the bridge's IDS availability check before chat creation; failures identify
 an unreachable or unresolved address and do not create a partial group.
 
+### `chats.delete`
+
+Params: exactly one of `chat_id`, `chat_identifier`, or `chat_guid`.
+
+Result:
+
+```json
+{ "ok": true }
+```
+
+This bridge-backed method moves the chat to Recently Deleted, as deleting a
+conversation in Messages does. The chat leaves the conversation list and stays
+recoverable from Recently Deleted for 30 days. Status advertises the method only
+when the helper reports `selectors.moveChatToRecentlyDeleted`.
+
+Without that selector, or when the chat cannot be found, the helper refuses
+before touching the chat and never falls back to a permanent removal. The
+request fails with `-32603` and `data.disposition: "not_started"`,
+`data.retry_safe: true`, and `data.operation: "delete-chat"`.
+
 ### `messages.stats`
 
 Params:

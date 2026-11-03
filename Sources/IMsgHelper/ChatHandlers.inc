@@ -243,34 +243,33 @@ static NSDictionary *handleLeaveChat(NSInteger requestId, NSDictionary *params) 
     return successResponse(requestId, @{@"chatGuid": chatGuid, @"left": @YES});
 }
 
+/// `delete-chat`: move the chat to Recently Deleted, as a delete in Messages
+/// does. The chat leaves the conversation list and stays recoverable for 30
+/// days. Without that registry call, refuse before touching the chat rather
+/// than erase it permanently.
 static NSDictionary *handleDeleteChat(NSInteger requestId, NSDictionary *params) {
     NSString *chatGuid = params[@"chatGuid"];
-    if (!chatGuid.length) return errorResponse(requestId, @"Missing chatGuid");
-    IMChat *chat = resolveChatByGuid(chatGuid);
-    if (!chat) return errorResponse(requestId, @"Chat not found");
+    if (!chatGuid.length) return notStartedResponse(requestId, @"Missing chatGuid");
     Class regClass = NSClassFromString(@"IMChatRegistry");
     id reg = regClass ? [regClass performSelector:@selector(sharedInstance)] : nil;
-    SEL deleteSelector = NSSelectorFromString(@"deleteChat:");
-    SEL removeSelector = NSSelectorFromString(@"_chat_remove:");
-    SEL selectedSelector = NULL;
-    if ([reg respondsToSelector:deleteSelector]) {
-        selectedSelector = deleteSelector;
-    } else if ([reg respondsToSelector:removeSelector]) {
-        // macOS 26 removed deleteChat:, while Messages still uses the
-        // daemon-aware registry removal path exposed as _chat_remove:.
-        selectedSelector = removeSelector;
+    SEL recentlyDeletedSelector = NSSelectorFromString(
+        @"moveMessagesInChatsToRecentlyDeleted:deleteDate:synchronously:completionHandler:");
+    if (![reg respondsToSelector:recentlyDeletedSelector]) {
+        return notStartedResponse(requestId,
+            @"Recoverable chat deletion is unavailable "
+            @"(IMChatRegistry moveMessagesInChatsToRecentlyDeleted:deleteDate:"
+            @"synchronously:completionHandler: missing); the chat was not deleted");
     }
-    if (!reg || selectedSelector == NULL) {
-        return errorResponse(requestId,
-            @"Chat deletion is unavailable (deleteChat: and _chat_remove: missing)");
-    }
+    IMChat *chat = resolveChatByGuid(chatGuid);
+    if (!chat) return notStartedResponse(requestId, @"Chat not found");
     @try {
-        [reg performSelector:selectedSelector withObject:chat];
+        ((void (*)(id, SEL, NSArray *, NSDate *, BOOL, id))objc_msgSend)(
+            reg, recentlyDeletedSelector, @[chat], [NSDate date], YES, ^{});
     } @catch (NSException *ex) { return errorResponse(requestId, ex.reason ?: @"failed"); }
     return successResponse(requestId, @{
         @"chatGuid": chatGuid,
         @"deleted": @YES,
-        @"method": NSStringFromSelector(selectedSelector)
+        @"method": NSStringFromSelector(recentlyDeletedSelector)
     });
 }
 

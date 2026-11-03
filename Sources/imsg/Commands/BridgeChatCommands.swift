@@ -246,7 +246,11 @@ enum ChatDeleteCommand {
   static let spec = CommandSpec(
     name: "chat-delete",
     abstract: "Delete a chat from Messages.app",
-    discussion: nil,
+    discussion: """
+      Moves the chat to Recently Deleted, as deleting it in Messages does; it
+      stays recoverable there for 30 days. On a Messages version without that
+      API, the command fails and the chat is left untouched.
+      """,
     signature: CommandSignatures.withRuntimeFlags(
       CommandSignature(
         options: CommandSignatures.baseOptions() + [
@@ -259,14 +263,21 @@ enum ChatDeleteCommand {
     try await run(values: values, runtime: runtime)
   }
 
-  static func run(values: ParsedValues, runtime: RuntimeOptions) async throws {
+  static func run(
+    values: ParsedValues,
+    runtime: RuntimeOptions,
+    invokeBridge: @escaping (BridgeAction, [String: Any]) async throws -> [String: Any] = {
+      action, params in
+      try await IMsgBridgeClient.shared.invoke(action: action, params: params)
+    }
+  ) async throws {
     guard let chat = values.option("chat"), !chat.isEmpty else {
       throw ParsedValuesError.missingOption("chat")
     }
     let params: [String: Any] = ["chatGuid": chat]
     _ = try await BridgeOutput.invokeAndEmit(
-      action: .deleteChat, params: params, runtime: runtime
-    ) { _ in "chat-delete: deleted" }
+      action: .deleteChat, params: params, runtime: runtime, invokeBridge: invokeBridge
+    ) { _ in "chat-delete: moved to Recently Deleted" }
   }
 }
 

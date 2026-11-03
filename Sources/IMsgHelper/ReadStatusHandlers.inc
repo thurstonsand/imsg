@@ -372,10 +372,9 @@ static NSDictionary* handleStatus(NSInteger requestId, NSDictionary *params) {
         @"pollUpdateMessage": @(
             [chatClass instancesRespondToSelector:@selector(sendMessage:)]
                 && pollVoteMessageInitializerAvailable() && activeSenderHandle),
-        @"deleteChat": @(hasRegistry &&
-            [registryClass instancesRespondToSelector:NSSelectorFromString(@"deleteChat:")]),
-        @"removeChat": @(hasRegistry &&
-            [registryClass instancesRespondToSelector:NSSelectorFromString(@"_chat_remove:")])
+        @"moveChatToRecentlyDeleted": @(hasRegistry &&
+            [registryClass instancesRespondToSelector:NSSelectorFromString(
+                @"moveMessagesInChatsToRecentlyDeleted:deleteDate:synchronously:completionHandler:")])
     };
 
     return successResponse(requestId, @{
