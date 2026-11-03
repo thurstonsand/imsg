@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `imsg icloud status|sync` and the `icloud.status` / `icloud.sync` RPC methods to read and start a Messages in iCloud sync through the bridge, advertised by the `icloudSyncStatus` and `icloudSync` helper selectors (#382).
 - Schedule weekly CodeQL main scans while retaining PR and manual analysis.
 
 ## 0.20.0 - 2026-10-26
